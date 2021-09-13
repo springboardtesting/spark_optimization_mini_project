@@ -7,7 +7,7 @@ Suppose we want to compose query in which we get for each question also the numb
 
 import pyspark
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, count, month
+from pyspark.sql.functions import col, count, month, broadcast
 import os
 
 
@@ -33,7 +33,7 @@ Here we : get number of answers per question per month
 
 answers_month = answersDF.withColumn('month', month('creation_date')).groupBy('question_id', 'month').agg(count('*').alias('cnt'))
 
-resultDF = questionsDF.join(answers_month, 'question_id').select('question_id', 'creation_date', 'title', 'month', 'cnt')
+resultDF = questionsDF.join(broadcast(answers_month), 'question_id').select('question_id', 'creation_date', 'title', 'month', 'cnt')
 
 resultDF.orderBy('question_id', 'month').show()
 
